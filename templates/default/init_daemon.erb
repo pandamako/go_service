@@ -1,0 +1,91 @@
+#!/bin/bash
+### BEGIN INIT INFO
+# Provides:          <%=@app_name %>
+# Required-Start:    $all
+# Required-Stop:     $network $local_fs $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Start the <%=@app_name %> puma at boot
+# Description:       Enable <%=@app_name %> at boot time.
+### END INIT INFO
+
+# This file is managed by Chef.
+# Do NOT modify this file directly.
+
+# Change these to match your app:
+APP_NAME=<%=@app_name %>
+APP_USER=<%=@user %>
+APP_ENV=<%=@environment %>
+APP_ROOT=<%=@app_root %>
+APP_SHARED=<%=@app_shared %>
+DAEMON_NAME=<%=@daemon_name %>
+
+SERVICE_NAME="$DAEMON_NAME_$APP_ENV"
+PID_FILE="$APP_SHARED/tmp/pids/$DAEMON_NAME.pid"
+LOG_FILE="$APP_SHARED/logs/$DAEMON_NAME.log"
+
+EXECUTABLE="$APP_ROOT/$DAEMON_NAME"
+EXECUTABLE_OPTS="-p $PID_FILE"
+
+stop_app() {
+  start-stop-daemon --stop \
+    --user $APP_USER \
+    --name $SERVICE_NAME \
+    --retry=TERM/10/KILL/5
+
+  echo "$NAME service has been stopped"
+}
+
+start_app() {
+  start-stop-daemon --start \
+    --background \
+    --user $APP_USER \
+    --chuid $APP_USER \
+    --name $SERVICE_NAME \
+    --startas $EXECUTABLE
+
+  RETVAL=$?
+
+  echo "$DAEMON_NAME service has been started"
+  return $RETVAL
+}
+
+upgrade_app() {
+  start-stop-daemon --stop \
+    --user $APP_USER \
+    --name $SERVICE_NAME \
+    --signal HUP \
+    --oknodo
+
+  echo "$NAME service has been upgraded"
+}
+
+sig () {
+  test -s "$PID_FILE" && kill -$1 `cat $PID_FILE`
+}
+
+oldsig () {
+  test -s $PID_FILE_OLD && kill -$1 `cat $PID_FILE_OLD`
+}
+
+case ${1-help} in
+  start)
+    sig 0 && echo >&2 "Already running" && exit 0
+    start_app
+    ;;
+  stop)
+    stop_app && exit 0
+    echo >&2 "Not running"
+    ;;
+  restart)
+    stop_app
+    start_app
+    ;;
+  upgrade)
+    upgrade_app && exit 0
+    ;;
+  *)
+    echo >&2 "Usage: $0 <start|stop|restart>"
+    exit 1
+    ;;
+esac
