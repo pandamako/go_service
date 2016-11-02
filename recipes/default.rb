@@ -30,7 +30,6 @@ node[:go_service].each do |service_config|
     mkdir.call "/home/#{service_config[:user]}/#{app_name}"
     mkdir.call "/home/apps/#{service_config[:name]}/#{environment[:name]}"
     mkdir.call "/home/apps/#{service_config[:name]}/#{environment[:name]}/releases"
-    #mkdir.call app_root
     mkdir.call app_shared
 
     %w{config public log tmp tmp/pids}.each do |dir|

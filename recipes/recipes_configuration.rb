@@ -1,4 +1,3 @@
-# node.override[:xvfb][:display] = 99
 node.override[:locale][:lang] = 'en_US.UTF-8'
 node.override[:tz] = 'Europe/Moscow'
 
